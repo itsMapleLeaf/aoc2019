@@ -79,8 +79,9 @@ private class InstructionList(val instructions: List<Instruction>) {
                         'R' to Direction.Right
                     )
 
-                    val char = it[0]
-                    val direction = directionMap[char] ?: throw Error("unexpected direction $char")
+                    val direction = with(it[0]) {
+                        directionMap[this] ?: throw Error("unexpected direction $this")
+                    }
 
                     val distance = it.drop(1).toInt()
 
