@@ -72,13 +72,15 @@ private class InstructionList(val instructions: List<Instruction>) {
             val instructions = instructionString
                 .split(",")
                 .map {
-                    val direction = when (val char = it[0]) {
-                        'U' -> Direction.Up
-                        'D' -> Direction.Down
-                        'L' -> Direction.Left
-                        'R' -> Direction.Right
-                        else -> throw Error("unexpected direction $char")
-                    }
+                    val directionMap = mapOf(
+                        'U' to Direction.Up,
+                        'D' to Direction.Down,
+                        'L' to Direction.Left,
+                        'R' to Direction.Right
+                    )
+
+                    val char = it[0]
+                    val direction = directionMap[char] ?: throw Error("unexpected direction $char")
 
                     val distance = it.drop(1).toInt()
 
