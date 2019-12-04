@@ -14,9 +14,7 @@ fun main() {
             pass.repeatingGroups.any { it.length == 2 }
         },
         { pass ->
-            pass.dropLast(1)
-                .indices
-                .all { index -> pass[index].asDigit <= pass[index + 1].asDigit }
+            pass.toList().sorted() == pass.toList()
         }
     )
 
