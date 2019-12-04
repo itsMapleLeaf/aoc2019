@@ -13,34 +13,35 @@ private data class Point(val x: Int, val y: Int) {
     }
 }
 
-private data class Instruction(private val instructionString: String) {
-    val movement = let {
-        val distance = instructionString.drop(1).toInt()
-        when (val letter = instructionString[0]) {
-            'U' -> Point(0, distance)
-            'D' -> Point(0, -distance)
-            'L' -> Point(-distance, 0)
-            'R' -> Point(distance, 0)
-            else -> throw Error("unexpected direction $letter")
-        }
-    }
-}
-
 private data class Wire(private val instructionListString: String) {
-    val instructions = instructionListString
-        .split(",")
-        .map { Instruction(it) }
+    val points = let {
+        fun getMovementVector(instructionString: String) = let {
+            val distance = instructionString.drop(1).toInt()
+            when (val letter = instructionString[0]) {
+                'U' -> Point(0, distance)
+                'D' -> Point(0, -distance)
+                'L' -> Point(-distance, 0)
+                'R' -> Point(distance, 0)
+                else -> throw Error("unexpected direction $letter")
+            }
+        }
 
-    val points = instructions.fold(listOf(Point.origin)) { points, instruction ->
-        val lastPoint = points.last()
-        val destination = lastPoint + instruction.movement
+        fun getNextPoints(points: List<Point>, movement: Point): List<Point> {
+            val lastPoint = points.last()
+            val destination = lastPoint + movement
 
-        val tracedPath = getPermutations(
-            lastPoint.x approaching destination.x,
-            lastPoint.y approaching destination.y
-        )
+            val tracedPath = getPermutations(
+                lastPoint.x approaching destination.x,
+                lastPoint.y approaching destination.y
+            )
 
-        points.dropLast(1) + tracedPath.map { Point.fromPair(it) }
+            return points.dropLast(1) + tracedPath.map { Point.fromPair(it) }
+        }
+
+        instructionListString
+            .split(",")
+            .map(::getMovementVector)
+            .fold(listOf(Point.origin), ::getNextPoints)
     }
 
     fun stepCountTo(point: Point) =
