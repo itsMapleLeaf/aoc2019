@@ -61,11 +61,6 @@ private data class WireBoard(private val firstInstructionString: String, private
         intersections.map { firstWire.stepCountTo(it) + secondWire.stepCountTo(it) }.min()
 }
 
-fun getInputLine(prefix: String): String {
-    print(prefix)
-    return readLine() ?: throw Error("failed to get input")
-}
-
 fun main() {
     val firstWireInstructions = getInputLine("enter first wire instructions: ")
     val secondWireInstructions = getInputLine("enter second wire instructions: ")

@@ -11,3 +11,8 @@ internal infix fun Int.approaching(other: Int) = when {
 internal fun <A, B> getPermutations(first: Iterable<A>, second: Iterable<B>): Iterable<Pair<A, B>> {
     return first.flatMap { a -> second.map { b -> Pair(a, b) } }
 }
+
+internal fun getInputLine(prefix: String): String {
+    print(prefix)
+    return readLine() ?: throw Error("failed to get input")
+}
