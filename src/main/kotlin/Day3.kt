@@ -5,6 +5,10 @@ private infix fun Int.approaching(other: Int) = when {
     else -> this downTo other
 }
 
+private fun <A, B> getPermutations(first: Iterable<A>, second: Iterable<B>): Iterable<Pair<A, B>> {
+    return first.flatMap { a -> second.map { b -> Pair(a, b) } }
+}
+
 private data class Point(val x: Int, val y: Int) {
     operator fun plus(point: Point) =
         Point(x + point.x, y + point.y)
@@ -13,6 +17,8 @@ private data class Point(val x: Int, val y: Int) {
 
     companion object {
         val origin = Point(1, 1)
+
+        fun fromPair(pair: Pair<Int, Int>) = Point(pair.first, pair.second)
     }
 }
 
@@ -40,15 +46,11 @@ private data class Wire(private val instructionListString: String) {
         get() = instructions.fold(setOf(Point.origin)) { points, instruction ->
             val lastPoint = points.last()
             val destination = lastPoint + instruction.movement
-            val tracedPath = mutableListOf<Point>()
-
-            for (x in lastPoint.x approaching destination.x) {
-                for (y in lastPoint.y approaching destination.y) {
-                    tracedPath.add(Point(x, y))
-                }
-            }
-
-            points + tracedPath
+            val tracedPath = getPermutations(
+                lastPoint.x approaching destination.x,
+                lastPoint.y approaching destination.y
+            )
+            points + tracedPath.map { Point.fromPair(it) }
         }
 }
 
