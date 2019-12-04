@@ -1,14 +1,5 @@
 import kotlin.math.abs
 
-private infix fun Int.approaching(other: Int) = when {
-    this < other -> this..other
-    else -> this downTo other
-}
-
-private fun <A, B> getPermutations(first: Iterable<A>, second: Iterable<B>): Iterable<Pair<A, B>> {
-    return first.flatMap { a -> second.map { b -> Pair(a, b) } }
-}
-
 private data class Point(val x: Int, val y: Int) {
     operator fun plus(point: Point) =
         Point(x + point.x, y + point.y)
@@ -43,10 +34,12 @@ private data class Wire(private val instructionListString: String) {
     val points = instructions.fold(setOf(Point.origin)) { points, instruction ->
         val lastPoint = points.last()
         val destination = lastPoint + instruction.movement
+
         val tracedPath = getPermutations(
             lastPoint.x approaching destination.x,
             lastPoint.y approaching destination.y
         )
+
         points + tracedPath.map { Point.fromPair(it) }
     }
 
