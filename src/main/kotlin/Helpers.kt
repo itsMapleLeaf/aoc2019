@@ -16,3 +16,17 @@ internal fun getInputLine(prefix: String): String {
     print(prefix)
     return readLine() ?: throw Error("failed to get input")
 }
+
+internal val String.repeatingGroups
+    get() = this
+        .drop(1)
+        .fold(listOf(this.take(1))) { groups, nextChar ->
+            when (nextChar) {
+                groups.last().last() ->
+                    groups.dropLast(1) + (groups.last() + nextChar)
+                else ->
+                    groups + nextChar.toString()
+            }
+        }
+
+internal val Char.asDigit get() = toString().toInt()
