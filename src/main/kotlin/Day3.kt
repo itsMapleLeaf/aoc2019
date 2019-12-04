@@ -31,7 +31,7 @@ private data class Wire(private val instructionListString: String) {
         .split(",")
         .map { Instruction(it) }
 
-    val points = instructions.fold(setOf(Point.origin)) { points, instruction ->
+    val points = instructions.fold(listOf(Point.origin)) { points, instruction ->
         val lastPoint = points.last()
         val destination = lastPoint + instruction.movement
 
@@ -40,11 +40,11 @@ private data class Wire(private val instructionListString: String) {
             lastPoint.y approaching destination.y
         )
 
-        points + tracedPath.map { Point.fromPair(it) }
+        points.dropLast(1) + tracedPath.map { Point.fromPair(it) }
     }
 
     fun stepCountTo(point: Point) =
-        points.takeWhile { it != point }.count()
+        points.lastIndexOf(point)
 }
 
 private data class WireBoard(private val firstInstructionString: String, private val secondInstructionString: String) {
