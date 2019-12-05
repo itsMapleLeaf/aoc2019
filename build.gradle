@@ -14,7 +14,15 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.2'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.26'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 compileKotlin {
