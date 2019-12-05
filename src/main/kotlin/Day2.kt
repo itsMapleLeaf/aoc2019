@@ -1,42 +1,51 @@
-private class Operator(private val getResult: (Int, Int) -> Int) {
-    fun run(values: MutableList<Int>, headPosition: Int) {
-        val firstSourcePosition = values[headPosition + 1]
-        val secondSourcePosition = values[headPosition + 2]
-        val destinationPosition = values[headPosition + 3]
-        values[destinationPosition] = getResult(values[firstSourcePosition], values[secondSourcePosition])
-    }
-}
+private data class Program(private val values: List<Int>, private val position: Int) {
+    val nextProgram
+        get() =
+            when (val currentValue = values[position]) {
+                1, 2 -> {
+                    val firstSourceIndex = values[position + 1]
+                    val secondSourceIndex = values[position + 2]
+                    val destinationIndex = values[position + 3]
 
-private val operators = mapOf(
-    1 to Operator { a, b -> a + b },
-    2 to Operator { a, b -> a * b }
-)
+                    val firstValue = values[firstSourceIndex]
+                    val secondValue = values[secondSourceIndex]
+
+                    val result = when (currentValue) {
+                        1 -> firstValue + secondValue
+                        2 -> firstValue * secondValue
+                        else -> throw Error("we broke the laws of physics somehow")
+                    }
+
+                    val nextValues = values.withValueAtIndex(result, destinationIndex)
+
+                    Program(nextValues, position + 4)
+                }
+
+                99 ->
+                    null
+
+                else ->
+                    throw Error("unknown instruction $currentValue at position $position")
+            }
+
+
+    val output get() = values[0]
+}
 
 private fun runProgram(programString: String, noun: Int, verb: Int): Int {
     val values = programString
         .split(',')
         .map { it.toInt() }
         .toMutableList()
+        .withValueAtIndex(noun, 1)
+        .withValueAtIndex(verb, 2)
 
-    values[1] = noun
-    values[2] = verb
-
-    var position = 0
-
-    while (true) {
-        when (val currentValue = values[position]) {
-            in operators.keys -> {
-                operators[currentValue]?.run(values, position)
-                position += 4
-            }
-
-            99 ->
-                return values[0]
-
-            else ->
-                throw Error("what the fuck")
-        }
+    tailrec fun getNextProgramRecursive(program: Program): Program {
+        val next = program.nextProgram
+        return if (next == null) return program else getNextProgramRecursive(next)
     }
+
+    return getNextProgramRecursive(Program(values, 0)).output
 }
 
 private const val program =
