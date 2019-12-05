@@ -33,13 +33,3 @@ internal val Char.asDigit get() = toString().toInt()
 
 internal fun <T> Iterable<T>.replace(newValue: T, targetIndex: Int) =
     mapIndexed { index, currentValue -> if (index == targetIndex) newValue else currentValue }
-
-//class WithValueAtIndexTest {
-//    @Test
-//    fun `sets a value at a given index`() {
-//        val input = listOf(1, 2, 3)
-//        val result = input.withValueAtIndex(4, 2)
-//        assert(result == listOf(1, 2, 4))
-//    }
-//}
-//
