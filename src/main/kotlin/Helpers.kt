@@ -18,20 +18,20 @@ internal fun getInputLine(prefix: String): String {
 }
 
 internal val String.repeatingGroups
-    get() = this
-        .drop(1)
-        .fold(listOf(this.take(1))) { groups, nextChar ->
-            when (nextChar) {
-                groups.last().last() ->
-                    groups.dropLast(1) + (groups.last() + nextChar)
-                else ->
-                    groups + nextChar.toString()
-            }
+    get() = this.drop(1).fold(listOf(this.take(1))) { groups, nextChar ->
+        val lastGroup = groups.last()
+        val lastCharacter = lastGroup.last()
+
+        if (nextChar == lastCharacter) {
+            groups.dropLast(1) + (lastGroup + nextChar)
+        } else {
+            groups + nextChar.toString()
         }
+    }
 
 internal val Char.asDigit get() = toString().toInt()
 
-internal fun <T> List<T>.withValueAtIndex(newValue: T, targetIndex: Int) =
+internal fun <T> Iterable<T>.replace(newValue: T, targetIndex: Int) =
     mapIndexed { index, currentValue -> if (index == targetIndex) newValue else currentValue }
 
 //class WithValueAtIndexTest {

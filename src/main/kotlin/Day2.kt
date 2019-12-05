@@ -16,7 +16,7 @@ private data class Program(private val values: List<Int>, private val position: 
                         else -> throw Error("we broke the laws of physics somehow")
                     }
 
-                    val nextValues = values.withValueAtIndex(result, destinationIndex)
+                    val nextValues = values.replace(result, destinationIndex)
 
                     Program(nextValues, position + 4)
                 }
@@ -35,10 +35,12 @@ private data class Program(private val values: List<Int>, private val position: 
 private fun runProgram(programString: String, noun: Int, verb: Int): Int {
     val values = programString
         .split(',')
+        .asSequence()
         .map { it.toInt() }
         .toMutableList()
-        .withValueAtIndex(noun, 1)
-        .withValueAtIndex(verb, 2)
+        .replace(noun, 1)
+        .replace(verb, 2)
+        .toList()
 
     tailrec fun getNextProgramRecursive(program: Program): Program {
         val next = program.nextProgram
