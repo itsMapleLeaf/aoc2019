@@ -13,7 +13,7 @@ private const val complexExample =
 
 fun diagnosticTest() {
     val program = IntcodeProgram(puzzleInput)
-    program.setInputs(mutableListOf("1"))
+    program.setInputs("1")
     program.run()
     println("diagnostics result: ${program.outputs}")
 
@@ -21,7 +21,7 @@ fun diagnosticTest() {
 
 fun extendThermalRadiators() {
     val program = IntcodeProgram(puzzleInput)
-    program.setInputs(mutableListOf("5"))
+    program.setInputs("5")
     program.run()
     println("diagnostic code for system ID 5: ${program.outputs.first()}")
 }

@@ -25,7 +25,7 @@ internal class IntcodeProgram(programString: String) {
         values[index] = value
     }
 
-    fun setInputs(inputs: Iterable<String>) {
+    fun setInputs(vararg inputs: String) {
         inputList = inputs.toMutableList()
     }
 
