@@ -3,6 +3,10 @@ private enum class Instruction {
     Multiply,
     Input,
     Output,
+    JumpIfTrue,
+    JumpIfFalse,
+    LessThan,
+    Equals,
     Stop,
 }
 
@@ -40,6 +44,10 @@ internal class IntcodeProgram(programString: String) {
                 2 -> Instruction.Multiply
                 3 -> Instruction.Input
                 4 -> Instruction.Output
+                5 -> Instruction.JumpIfTrue
+                6 -> Instruction.JumpIfFalse
+                7 -> Instruction.LessThan
+                8 -> Instruction.Equals
                 99 -> Instruction.Stop
                 else -> throw Error("unknown instruction number $num")
             }
@@ -90,6 +98,44 @@ internal class IntcodeProgram(programString: String) {
                     val output = getParamWithMode(0)
                     outputs += output
                     position += 2
+                }
+
+                Instruction.JumpIfTrue -> {
+                    val value = getParamWithMode(0)
+                    val destination = getParamWithMode(1)
+                    if (value != 0) {
+                        position = destination
+                    } else {
+                        position += 3
+                    }
+                }
+
+                Instruction.JumpIfFalse -> {
+                    val value = getParamWithMode(0)
+                    val destination = getParamWithMode(1)
+                    if (value == 0) {
+                        position = destination
+                    } else {
+                        position += 3
+                    }
+                }
+
+                Instruction.LessThan -> {
+                    val first = getParamWithMode(0)
+                    val second = getParamWithMode(1)
+                    val destinationIndex = getParam(2)
+
+                    values[destinationIndex] = if (first < second) "1" else "0"
+                    position += 4
+                }
+
+                Instruction.Equals -> {
+                    val first = getParamWithMode(0)
+                    val second = getParamWithMode(1)
+                    val destinationIndex = getParam(2)
+
+                    values[destinationIndex] = if (first == second) "1" else "0"
+                    position += 4
                 }
             }
         }
