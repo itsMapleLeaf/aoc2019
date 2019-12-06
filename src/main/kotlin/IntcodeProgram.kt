@@ -1,94 +1,97 @@
-internal data class IntcodeProgram(
-    private val values: List<Int>,
-    private val position: Int,
-    private val input: Iterator<Int>,
-    internal val output: List<Int>
-) {
-    companion object {
-        fun fromString(programString: String): IntcodeProgram {
-            return IntcodeProgram(
-                values = programString.split(',').map { it.toInt() },
-                position = 0,
-                input = IntegerInputIterator(),
-                output = listOf()
-            )
-        }
+private enum class Instruction {
+    Add,
+    Multiply,
+    Input,
+    Output,
+    Stop,
+}
+
+private enum class ParamMode {
+    Position,
+    Immediate,
+}
+
+internal class IntcodeProgram(programString: String) {
+    var inputList = mutableListOf<String>()
+    val values = programString.split(",").toMutableList()
+    var position = 0
+    val outputs = mutableListOf<Int>()
+
+    fun setValue(index: Int, value: String) {
+        values[index] = value
     }
 
-    fun withValue(value: Int, index: Int) =
-        IntcodeProgram(values.replace(value, index), position, input, output)
+    fun setInputs(inputs: Iterable<String>) {
+        inputList = inputs.toMutableList()
+    }
 
-    fun withInput(newInput: Iterator<Int>) =
-        IntcodeProgram(values, position, newInput, output)
+    fun run() {
+        fun getParam(offset: Int) =
+            values[position + offset + 1].toInt()
 
-    private fun move(steps: Int) =
-        IntcodeProgram(values, position + steps, input, output)
+        fun getPositionParam(offset: Int) =
+            values[getParam(offset)].toInt()
 
-    private fun withOutput(newOutput: Int) =
-        IntcodeProgram(values, position, input, output + newOutput)
+        loop@ while (true) {
+            val currentValue = values[position]
 
-    private fun getNextProgram(): IntcodeProgram? {
-        return when (val currentValue = values[position]) {
-            1, 2 -> {
-                val firstSourceIndex = values[position + 1]
-                val secondSourceIndex = values[position + 2]
-                val destinationIndex = values[position + 3]
+            val instruction = when (val num = currentValue.takeLast(2).toInt()) {
+                1 -> Instruction.Add
+                2 -> Instruction.Multiply
+                3 -> Instruction.Input
+                4 -> Instruction.Output
+                99 -> Instruction.Stop
+                else -> throw Error("unknown instruction number $num")
+            }
 
-                val firstValue = values[firstSourceIndex]
-                val secondValue = values[secondSourceIndex]
+            val paramModes = currentValue.dropLast(2).reversed().map {
+                when (it) {
+                    '0' -> ParamMode.Position
+                    '1' -> ParamMode.Immediate
+                    else -> throw Error("unknown param mode number $it")
+                }
+            }
 
-                val result = when (currentValue) {
-                    1 -> firstValue + secondValue
-                    2 -> firstValue * secondValue
-                    else -> throw Error("we broke the laws of physics somehow")
+            fun getParamMode(offset: Int) =
+                paramModes.getOrNull(offset) ?: ParamMode.Position
+
+            fun getParamWithMode(offset: Int) = when (getParamMode(offset)) {
+                ParamMode.Position -> getPositionParam(offset)
+                ParamMode.Immediate -> getParam(offset)
+            }
+
+            when (instruction) {
+                Instruction.Stop ->
+                    break@loop
+
+                Instruction.Add, Instruction.Multiply -> {
+                    val first = getParamWithMode(0)
+                    val second = getParamWithMode(1)
+                    val resultIndex = getParam(2)
+
+                    val result = when (instruction) {
+                        Instruction.Add -> first + second
+                        Instruction.Multiply -> first * second
+                        else -> throw Error("kotlin please get better type narrowing")
+                    }
+
+                    values[resultIndex] = result.toString()
+                    position += 4
                 }
 
-                withValue(result, destinationIndex).move(4)
+                Instruction.Input -> {
+                    val input = inputList.removeAt(inputList.size - 1)
+                    val storedIndex = getParam(0)
+                    values[storedIndex] = input
+                    position += 2
+                }
+
+                Instruction.Output -> {
+                    val output = getParamWithMode(0)
+                    outputs += output
+                    position += 2
+                }
             }
-
-            3 -> {
-                val newValue = input.next()
-                val destinationIndex = values[position + 1]
-                withValue(newValue, destinationIndex).move(2)
-            }
-
-            4 -> {
-                val outputIndex = values[position + 1]
-                withOutput(values[outputIndex]).move(2)
-            }
-
-            99 ->
-                null
-
-            else ->
-                throw Error("unknown instruction $currentValue at position $position")
         }
     }
-
-    fun run(): IntcodeProgram {
-        val next = getNextProgram() ?: return this
-        return next.run()
-    }
-
-    val firstValue get() = values.first()
-}
-
-private class IntegerInputIterator : Iterator<Int> {
-    override fun hasNext() = true
-    override fun next() = getIntegerInput()
-}
-
-private tailrec fun getIntegerInput(): Int {
-    print("enter an integer: ")
-
-    try {
-        val input = readLine() ?: throw Error("no input found?")
-        return input.toInt()
-    } catch (error: NumberFormatException) {
-        println("not a valid integer >:(")
-    } catch (error: Error) {
-        println("an error occurred: ${error.message}")
-    }
-
-    return getIntegerInput()
 }

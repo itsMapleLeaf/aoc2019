@@ -1,10 +1,9 @@
-private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): Int {
-    val initialProgram = IntcodeProgram.fromString(programString)
-        .withValue(noun, 1)
-        .withValue(verb, 2)
-
-    val finalProgram = initialProgram.run()
-    return finalProgram.firstValue
+private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): IntcodeProgram {
+    val program = IntcodeProgram(programString)
+    program.setValue(1, noun.toString())
+    program.setValue(1, verb.toString())
+    program.run()
+    return program
 }
 
 private const val input =
@@ -12,14 +11,17 @@ private const val input =
 
 private fun restoreGravityAssistProgram() {
     val result = runProgramWithNounAndVerb(input, 12, 2)
-    println("restore gravity assist: $result")
+    println("restore gravity assist: ${result.values}")
 }
 
 private fun reverseOutput() {
     val nounVerbPermutations = getPermutations(0..99, 0..99)
 
+    // TODO: this is broke, fix it
     val (noun, verb) = nounVerbPermutations
-        .find { (noun, verb) -> runProgramWithNounAndVerb(input, noun, verb) == 19690720 }
+        .find { (noun, verb) ->
+            runProgramWithNounAndVerb(input, noun, verb).values.first() == "19690720"
+        }
         ?: throw Error("could not find noun and verb for given result")
 
     println("reversed output: ${100 * noun + verb}")
