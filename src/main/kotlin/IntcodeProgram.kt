@@ -35,6 +35,10 @@ internal class IntcodeProgram(programString: String) {
         inputList.addAll(inputs)
     }
 
+    internal fun setInputs(vararg inputs: Int) {
+        setInputs(*inputs.map { it.toString() }.toTypedArray())
+    }
+
     private fun step(): StepResult {
         fun getParam(offset: Int) =
             values[position + offset + 1].toInt()

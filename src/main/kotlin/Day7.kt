@@ -10,7 +10,7 @@ private fun showLargestThrusterOutput() {
         var lastOutput = 0
         for (setting in phaseSettings) {
             val program = IntcodeProgram(currentProgram)
-            program.setInputs(setting.toString(), lastOutput.toString())
+            program.setInputs(setting, lastOutput)
             program.run()
             lastOutput = program.outputs.last()
         }
