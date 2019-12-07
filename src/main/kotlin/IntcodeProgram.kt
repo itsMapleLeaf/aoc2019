@@ -16,9 +16,9 @@ private enum class ParamMode {
 }
 
 internal class IntcodeProgram(programString: String) {
-    var inputList = mutableListOf<String>()
+    private var inputList = mutableListOf<String>()
     val values = programString.split(",").toMutableList()
-    var position = 0
+    private var position = 0
     val outputs = mutableListOf<Int>()
 
     fun setValue(index: Int, value: String) {
@@ -36,7 +36,8 @@ internal class IntcodeProgram(programString: String) {
         fun getPositionParam(offset: Int) =
             values[getParam(offset)].toInt()
 
-        loop@ while (true) {
+        var running = true
+        while (running) {
             val currentValue = values[position]
 
             val instruction = when (val num = currentValue.takeLast(2).toInt()) {
@@ -69,8 +70,9 @@ internal class IntcodeProgram(programString: String) {
             }
 
             when (instruction) {
-                Instruction.Stop ->
-                    break@loop
+                Instruction.Stop -> {
+                    running = false
+                }
 
                 Instruction.Add, Instruction.Multiply -> {
                     val first = getParamWithMode(0)
