@@ -26,11 +26,9 @@ private fun constructPlanetMap(): Map<String, Planet> {
     val planetMap = mutableMapOf<String, Planet>()
 
     for ((parentName, childName) in namePairs) {
-        val parent = planetMap[parentName] ?: Planet(parentName)
-        val child = planetMap[childName] ?: Planet(childName)
+        val parent = planetMap.getOrPut(parentName) { Planet(parentName) }
+        val child = planetMap.getOrPut(childName) { Planet(childName) }
         child.parent = parent
-        planetMap[parentName] = parent
-        planetMap[childName] = child
     }
 
     return planetMap.toMap()
