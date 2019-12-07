@@ -15,7 +15,7 @@ private fun restoreGravityAssistProgram() {
 }
 
 private fun reverseOutput() {
-    val nounVerbPermutations = getPermutations(0..99, 0..99)
+    val nounVerbPermutations = getPossiblePermutationPairs(0..99, 0..99)
 
     // TODO: this is broke, fix it
     val (noun, verb) = nounVerbPermutations

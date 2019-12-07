@@ -30,7 +30,7 @@ private data class Wire(private val instructionListString: String) {
             val lastPoint = points.last()
             val destination = lastPoint + movement
 
-            val tracedPath = getPermutations(
+            val tracedPath = getPossiblePermutationPairs(
                 lastPoint.x approaching destination.x,
                 lastPoint.y approaching destination.y
             )

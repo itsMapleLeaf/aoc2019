@@ -8,8 +8,26 @@ internal infix fun Int.approaching(other: Int) = when {
     else -> this downTo other
 }
 
-internal fun <A, B> getPermutations(first: Iterable<A>, second: Iterable<B>): Iterable<Pair<A, B>> {
+internal fun <A, B> getPossiblePermutationPairs(first: Iterable<A>, second: Iterable<B>): Iterable<Pair<A, B>> {
     return first.flatMap { a -> second.map { b -> Pair(a, b) } }
+}
+
+internal fun <T> List<T>.permutations(): Set<List<T>> = when (size) {
+    0 -> emptySet()
+    1 -> setOf(listOf(first()))
+    else -> {
+        val first = first()
+        drop(1).permutations()
+            .flatMap { sublist -> (0..sublist.size).map { index -> sublist.plusAt(index, first) } }
+            .toSet()
+    }
+}
+
+internal fun <T> List<T>.plusAt(index: Int, element: T) = when (index) {
+    !in 0..size -> throw Error("cannot plusAt: $index is not in range")
+    0 -> listOf(element) + this
+    size - 1 -> this + element
+    else -> take(index) + element + drop(index)
 }
 
 internal fun getInputLine(prefix: String): String {
