@@ -33,3 +33,5 @@ internal val Char.asDigit get() = toString().toInt()
 
 internal fun <T> Iterable<T>.replace(newValue: T, targetIndex: Int) =
     mapIndexed { index, currentValue -> if (index == targetIndex) newValue else currentValue }
+
+internal fun <T> List<T>.toPair() = Pair(this[0], this[1])
