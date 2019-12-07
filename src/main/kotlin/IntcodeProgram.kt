@@ -16,7 +16,7 @@ private enum class ParamMode {
 }
 
 internal class IntcodeProgram(programString: String) {
-    private var inputList = mutableListOf<String>()
+    private val inputList = mutableListOf<String>()
     val values = programString.split(",").toMutableList()
     private var position = 0
     val outputs = mutableListOf<Int>()
@@ -26,7 +26,8 @@ internal class IntcodeProgram(programString: String) {
     }
 
     fun setInputs(vararg inputs: String) {
-        inputList = inputs.toMutableList()
+        inputList.clear()
+        inputList.addAll(inputs)
     }
 
     fun run() {
