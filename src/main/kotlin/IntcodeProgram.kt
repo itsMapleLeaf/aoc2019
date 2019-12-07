@@ -21,18 +21,18 @@ internal enum class StepResult {
 }
 
 internal class IntcodeProgram(programString: String) {
-    private val inputList = mutableListOf<String>()
     internal val values = programString.split(",").toMutableList()
-    private var position = 0
     internal val outputs = mutableListOf<Int>()
+    private val inputs = mutableListOf<String>()
+    private var position = 0
 
     internal fun setValue(index: Int, value: String) {
         values[index] = value
     }
 
     internal fun setInputs(vararg inputs: String) {
-        inputList.clear()
-        inputList.addAll(inputs)
+        this.inputs.clear()
+        this.inputs.addAll(inputs)
     }
 
     internal fun setInputs(vararg inputs: Int) {
@@ -98,7 +98,7 @@ internal class IntcodeProgram(programString: String) {
             }
 
             Instruction.Input -> {
-                val input = inputList.removeAt(0)
+                val input = inputs.removeAt(0)
                 val storedIndex = getParam(0)
                 values[storedIndex] = input
                 position += 2
