@@ -11,7 +11,7 @@ private class Planet(private val name: String) {
     }
 
     internal fun getPathToCenter(): List<Planet> {
-        val parent = this.parent ?: return listOf()
+        val parent = this.parent ?: return emptyList()
         return parent.getPathToCenter()
     }
 }
