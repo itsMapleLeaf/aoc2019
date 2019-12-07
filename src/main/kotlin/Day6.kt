@@ -5,14 +5,15 @@ private class Planet(private val name: String) {
 
     override fun toString() = name
 
-    internal fun getOrbitCount(): Int =
-        if (parent == null) 0 else 1 + parent!!.getOrbitCount()
+    internal fun getOrbitCount(): Int {
+        val parent = this.parent ?: return 0
+        return 1 + parent.getOrbitCount()
+    }
 
-    internal fun getPathToCenter(): List<Planet> =
-        listOf(this) + if (parent == null)
-            listOf()
-        else
-            parent!!.getPathToCenter()
+    internal fun getPathToCenter(): List<Planet> {
+        val parent = this.parent ?: return listOf()
+        return parent.getPathToCenter()
+    }
 }
 
 private fun getInput() =
