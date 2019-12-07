@@ -3,7 +3,7 @@ import java.io.File
 private class Planet(private val name: String) {
     internal var parent: Planet? = null
 
-    override fun toString() = name
+    override fun toString() = "Planet($name)"
 
     internal fun getOrbitCount(): Int {
         val parent = this.parent ?: return 0
@@ -46,13 +46,16 @@ private fun getTotalOrbitalTransfersToSanta() {
     val planetMap = constructPlanetMap()
 
     val youToCenter = planetMap.getValue("YOU").getPathToCenter().reversed()
-    val sanToCenter = planetMap.getValue("SAN").getPathToCenter().reversed()
+    val santaToCenter = planetMap.getValue("SAN").getPathToCenter().reversed()
+
+    println("your path to center: $youToCenter")
+    println("santa's path to center: $santaToCenter")
 
     val sharedCount = youToCenter.indices
-        .takeWhile { index -> youToCenter[index] == sanToCenter[index] }
+        .takeWhile { index -> youToCenter[index] == santaToCenter[index] }
         .size
 
-    val uniquePaths = youToCenter.drop(sharedCount) + sanToCenter.drop(sharedCount)
+    val uniquePaths = youToCenter.drop(sharedCount) + santaToCenter.drop(sharedCount)
     val totalDistance = uniquePaths.size - 2
 
     println("minimum orbital transfers to santa: $totalDistance")
