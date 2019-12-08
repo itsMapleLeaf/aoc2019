@@ -18,7 +18,6 @@ private fun restoreGravityAssistProgram() {
 private fun reverseOutput() {
     val nounVerbPermutations = getPossiblePermutationPairs(0..99, 0..99)
 
-    // TODO: this is broke, fix it
     val (noun, verb) = nounVerbPermutations
         .find { (noun, verb) ->
             runProgramWithNounAndVerb(puzzleInput, noun, verb).values.first() == "19690720"
