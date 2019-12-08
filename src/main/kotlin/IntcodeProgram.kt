@@ -69,7 +69,7 @@ internal class IntcodeProgram(programString: String) {
     private fun getPositionParam(offset: Int) =
         values[getParam(offset)].toInt()
 
-    private fun step() {
+    private fun step(): RunState {
         val currentValue = values[position]
 
         val instruction = currentValue.toInstruction()
@@ -84,10 +84,8 @@ internal class IntcodeProgram(programString: String) {
         }
 
         when (instruction) {
-            Instruction.Stop -> {
-                runState = RunState.Stop
-                return
-            }
+            Instruction.Stop ->
+                return RunState.Stop
 
             Instruction.Add, Instruction.Multiply -> {
                 val first = getParamWithMode(0)
@@ -97,7 +95,7 @@ internal class IntcodeProgram(programString: String) {
                 val result = when (instruction) {
                     Instruction.Add -> first + second
                     Instruction.Multiply -> first * second
-                    else -> throw Error("kotlin please get better type narrowing")
+                    else -> throw Error("unhandled math instruction $instruction")
                 }
 
                 values[resultIndex] = result.toString()
@@ -105,11 +103,7 @@ internal class IntcodeProgram(programString: String) {
             }
 
             Instruction.Input -> {
-                val input = inputs.popOrNull()
-                if (input == null) {
-                    runState = RunState.InputNeeded
-                    return
-                }
+                val input = inputs.popOrNull() ?: return RunState.InputNeeded
 
                 val storedIndex = getParam(0)
                 values[storedIndex] = input
@@ -161,12 +155,12 @@ internal class IntcodeProgram(programString: String) {
             }
         }
 
-        runState = RunState.Continue
+        return RunState.Continue
     }
 
     internal fun run() {
         do {
-            step()
+            runState = step()
         } while (runState == RunState.Continue)
     }
 }
