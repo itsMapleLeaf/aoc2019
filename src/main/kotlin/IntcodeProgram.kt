@@ -43,7 +43,7 @@ private fun Char.toParamMode() = when (this) {
 internal fun String.paramModes() =
     dropLast(2).reversed().map(Char::toParamMode)
 
-internal data class IntcodeProgramFunctional(
+internal data class IntcodeProgram(
     val values: List<String>,
     val position: Int = 0,
     val runState: RunState = RunState.Running,
@@ -52,10 +52,10 @@ internal data class IntcodeProgramFunctional(
 ) {
     companion object {
         fun fromString(programString: String) =
-            IntcodeProgramFunctional(programString.split(","))
+            IntcodeProgram(programString.split(","))
 
         fun fromNumbers(vararg numbers: Int) =
-            IntcodeProgramFunctional(numbers.map(Int::toString).toList())
+            IntcodeProgram(numbers.map(Int::toString).toList())
     }
 
     internal fun setValue(index: Int, value: String) = copy(values = values.replace(value, index))
@@ -64,7 +64,7 @@ internal data class IntcodeProgramFunctional(
     private fun addInputs(vararg inputs: String) = copy(inputs = inputs.toList())
     internal fun addInputs(vararg inputs: Int) = addInputs(*inputs.map { it.toString() }.toTypedArray())
 
-    internal fun run(): IntcodeProgramFunctional {
+    internal fun run(): IntcodeProgram {
         val next = nextState()
         return when (next.runState) {
             RunState.Running -> next.run()
@@ -95,7 +95,7 @@ internal data class IntcodeProgramFunctional(
         ParamMode.Immediate -> getParam(offset)
     }
 
-    private fun nextState(): IntcodeProgramFunctional =
+    private fun nextState(): IntcodeProgram =
         when (val instruction = currentInstruction()) {
             Instruction.Stop ->
                 setRunState(RunState.Stopped)

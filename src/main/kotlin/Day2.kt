@@ -1,5 +1,5 @@
-private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): IntcodeProgramFunctional {
-    return IntcodeProgramFunctional.fromString(programString)
+private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): IntcodeProgram {
+    return IntcodeProgram.fromString(programString)
         .setValue(1, noun)
         .setValue(2, verb)
         .run()

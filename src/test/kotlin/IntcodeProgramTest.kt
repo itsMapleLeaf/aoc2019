@@ -3,7 +3,7 @@ import io.kotlintest.specs.StringSpec
 
 class IntcodeProgramTest : StringSpec({
     "add and multiply (immediate mode)" {
-        val program = IntcodeProgramFunctional
+        val program = IntcodeProgram
             .fromNumbers(1101, 2, 3, 3, 1102, 2, 3, 7, 99)
             .run()
 
@@ -11,7 +11,7 @@ class IntcodeProgramTest : StringSpec({
     }
 
     "nextState - input instruction" {
-        val programWithInputs = IntcodeProgramFunctional
+        val programWithInputs = IntcodeProgram
             .fromNumbers(3, 1, 99)
             .addInputs(42)
 
@@ -23,7 +23,7 @@ class IntcodeProgramTest : StringSpec({
     }
 
     "consumes input if state is at input needed" {
-        val program = IntcodeProgramFunctional
+        val program = IntcodeProgram
             .fromNumbers(3, 1, 3, 3, 99)
             .addInputs(42)
 
