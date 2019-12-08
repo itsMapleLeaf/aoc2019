@@ -1,26 +1,16 @@
-typealias Validator = (pass: String) -> Boolean
-
-
 fun main() {
     val rangeString = "240920-789857"
+    val (start, end) = rangeString.split("-").map { it.toInt() }
 
-    val range = run {
-        val parts = rangeString.split("-")
-        parts[0].toInt()..parts[1].toInt()
-    }
+    fun hasRepeatingGroupOfTwo(pass: String) =
+        pass.repeatingGroups.any { it.length == 2 }
 
-    val validators = listOf<Validator>(
-        { pass ->
-            pass.repeatingGroups.any { it.length == 2 }
-        },
-        { pass ->
-            pass.toList().sorted() == pass.toList()
-        }
-    )
+    fun hasAscendingDigits(pass: String) =
+        pass.toList().sorted() == pass.toList()
 
-    val validPasswords = range
+    val validPasswords = (start..end)
         .map { it.toString() }
-        .filter { validators.all { isValid -> isValid(it) } }
+        .filter { hasRepeatingGroupOfTwo(it) && hasAscendingDigits(it) }
 
     println(validPasswords.joinToString("\n"))
     println("valid passwords: ${validPasswords.size}")
