@@ -53,8 +53,8 @@ internal class IntcodeProgram(programString: String) {
 
     internal val isStopped get() = runState == RunState.Stop
 
-    internal fun setValue(index: Int, value: String) {
-        values[index] = value
+    internal fun setValue(index: Int, value: Any) {
+        values[index] = value.toString()
     }
 
     internal fun addInputs(vararg inputs: String) {

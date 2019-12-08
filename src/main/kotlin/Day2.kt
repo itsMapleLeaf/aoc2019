@@ -1,7 +1,7 @@
 private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): IntcodeProgram {
     val program = IntcodeProgram(programString)
-    program.setValue(1, noun.toString())
-    program.setValue(1, verb.toString())
+    program.setValue(1, noun)
+    program.setValue(2, verb)
     program.run()
     return program
 }
