@@ -47,9 +47,11 @@ private fun String.paramModes() =
 internal class IntcodeProgram(programString: String) {
     internal val values = programString.split(",").toMutableList()
     internal val outputs = mutableListOf<Int>()
-    internal var runState = RunState.Init
+    private var runState = RunState.Init
     private val inputs = mutableListOf<String>()
     private var position = 0
+
+    internal val isStopped get() = runState == RunState.Stop
 
     internal fun setValue(index: Int, value: String) {
         values[index] = value
