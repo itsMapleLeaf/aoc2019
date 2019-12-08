@@ -7,7 +7,7 @@ class IntcodeProgramTest : StringSpec({
             .fromNumbers(1101, 2, 3, 3, 1102, 2, 3, 7, 99)
             .run()
 
-        program.values shouldBe listOf(1101, 2, 3, 5, 1102, 2, 3, 6, 99).map { it.toString() }
+        program.values shouldBe listOf(1101, 2, 3, 5, 1102, 2, 3, 6, 99)
     }
 
     "nextState - input instruction" {
@@ -15,7 +15,7 @@ class IntcodeProgramTest : StringSpec({
             .fromNumbers(3, 1, 99)
             .addInputs(42)
 
-        programWithInputs.inputs shouldBe listOf("42")
+        programWithInputs.inputs shouldBe listOf(42)
 
         val programAfterConsumedInputs = programWithInputs.run()
 

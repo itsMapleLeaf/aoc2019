@@ -11,7 +11,6 @@ private const val puzzleInput =
 
 private fun restoreGravityAssistProgram() {
     val result = runProgramWithNounAndVerb(puzzleInput, 12, 2)
-//    val result = runProgramWithNounAndVerb(testInput1, 0, 0)
     println("restore gravity assist: ${result.values}")
 }
 
@@ -20,7 +19,7 @@ private fun reverseOutput() {
 
     val (noun, verb) = nounVerbPermutations
         .find { (noun, verb) ->
-            runProgramWithNounAndVerb(puzzleInput, noun, verb).values.first() == "19690720"
+            runProgramWithNounAndVerb(puzzleInput, noun, verb).values.first() == 19690720
         }
         ?: throw Error("could not find noun and verb for given result")
 

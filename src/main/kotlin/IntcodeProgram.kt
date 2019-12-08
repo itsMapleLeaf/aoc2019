@@ -1,18 +1,13 @@
-internal enum class Instruction {
-    Add,
-    Multiply,
-    Input,
-    Output,
-    JumpIfTrue,
-    JumpIfFalse,
-    LessThan,
-    Equals,
-    Stop,
-}
-
-internal enum class ParamMode {
-    Position,
-    Immediate,
+private sealed class Instruction(val steps: Int) {
+    data class Add(val left: Int, val right: Int, val resultIndex: Int) : Instruction(4)
+    data class Multiply(val left: Int, val right: Int, val resultIndex: Int) : Instruction(4)
+    data class Input(val inputIndex: Int) : Instruction(2)
+    data class Output(val output: Int) : Instruction(2)
+    data class JumpIfTrue(val value: Int, val destination: Int) : Instruction(3)
+    data class JumpIfFalse(val value: Int, val destination: Int) : Instruction(3)
+    data class LessThan(val left: Int, val right: Int, val resultIndex: Int) : Instruction(4)
+    data class Equals(val left: Int, val right: Int, val resultIndex: Int) : Instruction(4)
+    object Stop : Instruction(0)
 }
 
 internal enum class RunState {
@@ -21,55 +16,28 @@ internal enum class RunState {
     Stopped,
 }
 
-internal fun String.toInstruction() = when (takeLast(2).toInt()) {
-    1 -> Instruction.Add
-    2 -> Instruction.Multiply
-    3 -> Instruction.Input
-    4 -> Instruction.Output
-    5 -> Instruction.JumpIfTrue
-    6 -> Instruction.JumpIfFalse
-    7 -> Instruction.LessThan
-    8 -> Instruction.Equals
-    99 -> Instruction.Stop
-    else -> throw Error("unknown instruction number \"$this\"")
-}
-
-private fun Char.toParamMode() = when (this) {
-    '0' -> ParamMode.Position
-    '1' -> ParamMode.Immediate
-    else -> throw Error("unknown param mode number \"$this\"")
-}
-
-internal fun String.paramModes() =
-    dropLast(2).reversed().map(Char::toParamMode)
-
 internal data class IntcodeProgram(
-    val values: List<String>,
+    val values: List<Int>,
     val position: Int = 0,
     val runState: RunState = RunState.Running,
-    val inputs: List<String> = emptyList(),
+    val inputs: List<Int> = emptyList(),
     val outputs: List<Int> = emptyList()
 ) {
     companion object {
         fun fromString(programString: String) =
-            IntcodeProgram(programString.split(","))
+            IntcodeProgram(programString.split(",").map(String::toInt))
 
         fun fromNumbers(vararg numbers: Int) =
-            IntcodeProgram(numbers.map(Int::toString).toList())
+            IntcodeProgram(numbers.toList())
     }
 
-    internal fun setValue(index: Int, value: String) = copy(values = values.replace(value, index))
-    internal fun setValue(index: Int, value: Int) = setValue(index, value.toString())
+    internal fun setValue(index: Int, value: Int) = copy(values = values.replace(value, index))
 
-    private fun addInputs(vararg inputs: String) = copy(inputs = inputs.toList())
-    internal fun addInputs(vararg inputs: Int) = addInputs(*inputs.map { it.toString() }.toTypedArray())
+    internal fun addInputs(vararg inputs: Int) = copy(inputs = this.inputs + inputs.toList())
 
     internal fun run(): IntcodeProgram {
         val next = nextState()
-        return when (next.runState) {
-            RunState.Running -> next.run()
-            else -> next
-        }
+        return if (next.runState == RunState.Running) next.run() else next
     }
 
     private fun addOutput(output: Int) = copy(outputs = outputs + output)
@@ -80,90 +48,71 @@ internal data class IntcodeProgram(
 
     private fun setRunState(runState: RunState) = copy(runState = runState)
 
-    private fun currentValue() = values[position]
+    private fun currentInstruction(): Instruction {
+        val currentValue = values[position]
+        val instructionCode = currentValue % 100
+        val paramModes = currentValue.digits().dropLast(2).reversed()
 
-    private fun currentInstruction() = currentValue().toInstruction()
-    private fun currentParamModes() = currentValue().paramModes()
+        fun directParam(offset: Int) = values[position + offset + 1]
 
-    private fun getParam(offset: Int) = values[position + offset + 1].toInt()
-    private fun getPositionParam(offset: Int) = values[getParam(offset)].toInt()
+        fun param(offset: Int) = when (paramModes.getOrNull(offset)) {
+            1 -> directParam(offset)
+            else -> values[directParam(offset)]
+        }
 
-    private fun getParamMode(offset: Int) = currentParamModes().getOrNull(offset) ?: ParamMode.Position
-
-    private fun getParamWithMode(offset: Int) = when (getParamMode(offset)) {
-        ParamMode.Position -> getPositionParam(offset)
-        ParamMode.Immediate -> getParam(offset)
+        return when (instructionCode) {
+            1 -> Instruction.Add(param(0), param(1), directParam(2))
+            2 -> Instruction.Multiply(param(0), param(1), directParam(2))
+            3 -> Instruction.Input(directParam(0))
+            4 -> Instruction.Output(param(0))
+            5 -> Instruction.JumpIfTrue(param(0), param(1))
+            6 -> Instruction.JumpIfFalse(param(0), param(1))
+            7 -> Instruction.LessThan(param(0), param(1), directParam(2))
+            8 -> Instruction.Equals(param(0), param(1), directParam(2))
+            99 -> Instruction.Stop
+            else -> error("unknown instruction code $instructionCode")
+        }
     }
 
-    private fun nextState(): IntcodeProgram =
-        when (val instruction = currentInstruction()) {
-            Instruction.Stop ->
+    private fun nextState(): IntcodeProgram {
+        return when (val instruction = currentInstruction()) {
+            is Instruction.Stop ->
                 setRunState(RunState.Stopped)
 
-            Instruction.Add, Instruction.Multiply -> {
-                val first = getParamWithMode(0)
-                val second = getParamWithMode(1)
-                val resultIndex = getParam(2)
-
-                val result = when (instruction) {
-                    Instruction.Add -> first + second
-                    Instruction.Multiply -> first * second
-                    else -> throw Error("unhandled math instruction $instruction")
-                }
-
-                setValue(resultIndex, result).advance(4)
+            is Instruction.Add -> with(instruction) {
+                setValue(resultIndex, left + right).advance(steps)
             }
 
-            Instruction.Input -> {
-                when (val input = inputs.firstOrNull()) {
-                    null ->
-                        setRunState(RunState.InputNeeded)
-                    else -> {
-                        val storedIndex = getParam(0)
-                        setValue(storedIndex, input).consumeInput().advance(2).setRunState(RunState.Running)
-                    }
+            is Instruction.Multiply -> with(instruction) {
+                setValue(resultIndex, left * right).advance(steps)
+            }
+
+            is Instruction.Input -> {
+                val input = inputs.firstOrNull() ?: return setRunState(RunState.InputNeeded)
+                with(instruction) {
+                    setValue(inputIndex, input).consumeInput().advance(steps).setRunState(RunState.Running)
                 }
             }
 
-            Instruction.Output -> {
-                val output = getParamWithMode(0)
-                addOutput(output).advance(2)
+            is Instruction.Output -> with(instruction) {
+                addOutput(output).advance(steps)
             }
 
-            Instruction.JumpIfTrue -> {
-                val value = getParamWithMode(0)
-                val destination = getParamWithMode(1)
-                if (value != 0) {
-                    setPosition(destination)
-                } else {
-                    advance(3)
-                }
+            is Instruction.JumpIfTrue -> with(instruction) {
+                if (value != 0) setPosition(destination) else advance(steps)
             }
 
-            Instruction.JumpIfFalse -> {
-                val value = getParamWithMode(0)
-                val destination = getParamWithMode(1)
-                if (value == 0) {
-                    setPosition(destination)
-                } else {
-                    advance(3)
-                }
+            is Instruction.JumpIfFalse -> with(instruction) {
+                if (value == 0) setPosition(destination) else advance(steps)
             }
 
-            Instruction.LessThan -> {
-                val first = getParamWithMode(0)
-                val second = getParamWithMode(1)
-                val destinationIndex = getParam(2)
-
-                setValue(destinationIndex, if (first < second) 1 else 0).advance(4)
+            is Instruction.LessThan -> with(instruction) {
+                setValue(resultIndex, if (left < right) 1 else 0).advance(steps)
             }
 
-            Instruction.Equals -> {
-                val first = getParamWithMode(0)
-                val second = getParamWithMode(1)
-                val destinationIndex = getParam(2)
-
-                setValue(destinationIndex, if (first == second) 1 else 0).advance(4)
+            is Instruction.Equals -> with(instruction) {
+                setValue(resultIndex, if (left == right) 1 else 0).advance(steps)
             }
         }
+    }
 }

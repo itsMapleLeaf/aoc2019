@@ -80,3 +80,6 @@ internal fun getUniqueFiveLengthPermutations(start: Int, end: Int): MutableSet<L
     }
     return result
 }
+
+internal fun Int.digits() =
+    toString().map { it.toString().toInt() }
