@@ -8,7 +8,7 @@ internal infix fun Int.approaching(other: Int) = when {
     else -> this downTo other
 }
 
-internal fun <A, B> getPossiblePermutationPairs(first: Iterable<A>, second: Iterable<B>): Iterable<Pair<A, B>> {
+internal fun <A, B> getPossiblePermutationPairs(first: Iterable<A>, second: Iterable<B>): List<Pair<A, B>> {
     return first.flatMap { a -> second.map { b -> Pair(a, b) } }
 }
 
