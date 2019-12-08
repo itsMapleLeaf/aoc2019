@@ -95,74 +95,75 @@ internal data class IntcodeProgramFunctional(
         ParamMode.Immediate -> getParam(offset)
     }
 
-    private fun nextState(): IntcodeProgramFunctional = when (val instruction = currentInstruction()) {
-        Instruction.Stop ->
-            setRunState(RunState.Stopped)
+    private fun nextState(): IntcodeProgramFunctional =
+        when (val instruction = currentInstruction()) {
+            Instruction.Stop ->
+                setRunState(RunState.Stopped)
 
-        Instruction.Add, Instruction.Multiply -> {
-            val first = getParamWithMode(0)
-            val second = getParamWithMode(1)
-            val resultIndex = getParam(2)
+            Instruction.Add, Instruction.Multiply -> {
+                val first = getParamWithMode(0)
+                val second = getParamWithMode(1)
+                val resultIndex = getParam(2)
 
-            val result = when (instruction) {
-                Instruction.Add -> first + second
-                Instruction.Multiply -> first * second
-                else -> throw Error("unhandled math instruction $instruction")
+                val result = when (instruction) {
+                    Instruction.Add -> first + second
+                    Instruction.Multiply -> first * second
+                    else -> throw Error("unhandled math instruction $instruction")
+                }
+
+                setValue(resultIndex, result).advance(4)
             }
 
-            setValue(resultIndex, result).advance(4)
-        }
-
-        Instruction.Input -> {
-            when (val input = inputs.firstOrNull()) {
-                null ->
-                    setRunState(RunState.InputNeeded)
-                else -> {
-                    val storedIndex = getParam(0)
-                    setValue(storedIndex, input).advance(2).consumeInput().setRunState(RunState.Running)
+            Instruction.Input -> {
+                when (val input = inputs.firstOrNull()) {
+                    null ->
+                        setRunState(RunState.InputNeeded)
+                    else -> {
+                        val storedIndex = getParam(0)
+                        setValue(storedIndex, input).consumeInput().advance(2).setRunState(RunState.Running)
+                    }
                 }
             }
-        }
 
-        Instruction.Output -> {
-            val output = getParamWithMode(0)
-            addOutput(output).advance(2)
-        }
+            Instruction.Output -> {
+                val output = getParamWithMode(0)
+                addOutput(output).advance(2)
+            }
 
-        Instruction.JumpIfTrue -> {
-            val value = getParamWithMode(0)
-            val destination = getParamWithMode(1)
-            if (value != 0) {
-                setPosition(destination)
-            } else {
-                advance(3)
+            Instruction.JumpIfTrue -> {
+                val value = getParamWithMode(0)
+                val destination = getParamWithMode(1)
+                if (value != 0) {
+                    setPosition(destination)
+                } else {
+                    advance(3)
+                }
+            }
+
+            Instruction.JumpIfFalse -> {
+                val value = getParamWithMode(0)
+                val destination = getParamWithMode(1)
+                if (value == 0) {
+                    setPosition(destination)
+                } else {
+                    advance(3)
+                }
+            }
+
+            Instruction.LessThan -> {
+                val first = getParamWithMode(0)
+                val second = getParamWithMode(1)
+                val destinationIndex = getParam(2)
+
+                setValue(destinationIndex, if (first < second) 1 else 0).advance(4)
+            }
+
+            Instruction.Equals -> {
+                val first = getParamWithMode(0)
+                val second = getParamWithMode(1)
+                val destinationIndex = getParam(2)
+
+                setValue(destinationIndex, if (first == second) 1 else 0).advance(4)
             }
         }
-
-        Instruction.JumpIfFalse -> {
-            val value = getParamWithMode(0)
-            val destination = getParamWithMode(1)
-            if (value == 0) {
-                setPosition(destination)
-            } else {
-                advance(3)
-            }
-        }
-
-        Instruction.LessThan -> {
-            val first = getParamWithMode(0)
-            val second = getParamWithMode(1)
-            val destinationIndex = getParam(2)
-
-            setValue(destinationIndex, if (first < second) 1 else 0).advance(4)
-        }
-
-        Instruction.Equals -> {
-            val first = getParamWithMode(0)
-            val second = getParamWithMode(1)
-            val destinationIndex = getParam(2)
-
-            setValue(destinationIndex, if (first == second) 1 else 0).advance(4)
-        }
-    }
 }
