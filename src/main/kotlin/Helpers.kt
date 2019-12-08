@@ -53,3 +53,30 @@ internal fun <T> Iterable<T>.replace(newValue: T, targetIndex: Int) =
     mapIndexed { index, currentValue -> if (index == targetIndex) newValue else currentValue }
 
 internal fun <T> List<T>.toPair() = Pair(this[0], this[1])
+
+internal fun <T> MutableList<T>.popOrNull(): T? {
+    if (isEmpty()) {
+        return null
+    }
+    return removeAt(0)
+}
+
+// TODO: make this less bad and/or fix permutations()
+internal fun getUniqueFiveLengthPermutations(start: Int, end: Int): MutableSet<List<Int>> {
+    val result = mutableSetOf<List<Int>>()
+    for (a in start..end) {
+        for (b in start..end) {
+            for (c in start..end) {
+                for (d in start..end) {
+                    for (e in start..end) {
+                        val permutation = listOf(a, b, c, d, e)
+                        if (permutation.toSet().size == 5) {
+                            result.add(permutation)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result
+}

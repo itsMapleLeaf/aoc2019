@@ -15,14 +15,39 @@ private enum class ParamMode {
     Immediate,
 }
 
-internal enum class StepResult {
+internal enum class RunState {
+    Init,
     Continue,
+    InputNeeded,
     Stop,
 }
+
+private fun String.toInstruction() = when (takeLast(2).toInt()) {
+    1 -> Instruction.Add
+    2 -> Instruction.Multiply
+    3 -> Instruction.Input
+    4 -> Instruction.Output
+    5 -> Instruction.JumpIfTrue
+    6 -> Instruction.JumpIfFalse
+    7 -> Instruction.LessThan
+    8 -> Instruction.Equals
+    99 -> Instruction.Stop
+    else -> throw Error("unknown instruction number \"$this\"")
+}
+
+private fun Char.toParamMode() = when (this) {
+    '0' -> ParamMode.Position
+    '1' -> ParamMode.Immediate
+    else -> throw Error("unknown param mode number \"$this\"")
+}
+
+private fun String.paramModes() =
+    dropLast(2).reversed().map(Char::toParamMode)
 
 internal class IntcodeProgram(programString: String) {
     internal val values = programString.split(",").toMutableList()
     internal val outputs = mutableListOf<Int>()
+    internal var runState = RunState.Init
     private val inputs = mutableListOf<String>()
     private var position = 0
 
@@ -30,44 +55,25 @@ internal class IntcodeProgram(programString: String) {
         values[index] = value
     }
 
-    internal fun setInputs(vararg inputs: String) {
-        this.inputs.clear()
+    internal fun addInputs(vararg inputs: String) {
         this.inputs.addAll(inputs)
     }
 
-    internal fun setInputs(vararg inputs: Int) {
-        setInputs(*inputs.map { it.toString() }.toTypedArray())
+    internal fun addInputs(vararg inputs: Int) {
+        addInputs(*inputs.map(Int::toString).toTypedArray())
     }
 
-    private fun step(): StepResult {
-        fun getParam(offset: Int) =
-            values[position + offset + 1].toInt()
+    private fun getParam(offset: Int) =
+        values[position + offset + 1].toInt()
 
-        fun getPositionParam(offset: Int) =
-            values[getParam(offset)].toInt()
+    private fun getPositionParam(offset: Int) =
+        values[getParam(offset)].toInt()
 
+    private fun step() {
         val currentValue = values[position]
 
-        val instruction = when (val num = currentValue.takeLast(2).toInt()) {
-            1 -> Instruction.Add
-            2 -> Instruction.Multiply
-            3 -> Instruction.Input
-            4 -> Instruction.Output
-            5 -> Instruction.JumpIfTrue
-            6 -> Instruction.JumpIfFalse
-            7 -> Instruction.LessThan
-            8 -> Instruction.Equals
-            99 -> Instruction.Stop
-            else -> throw Error("unknown instruction number $num")
-        }
-
-        val paramModes = currentValue.dropLast(2).reversed().map {
-            when (it) {
-                '0' -> ParamMode.Position
-                '1' -> ParamMode.Immediate
-                else -> throw Error("unknown param mode number $it")
-            }
-        }
+        val instruction = currentValue.toInstruction()
+        val paramModes = currentValue.paramModes()
 
         fun getParamMode(offset: Int) =
             paramModes.getOrNull(offset) ?: ParamMode.Position
@@ -79,7 +85,8 @@ internal class IntcodeProgram(programString: String) {
 
         when (instruction) {
             Instruction.Stop -> {
-                return StepResult.Stop
+                runState = RunState.Stop
+                return
             }
 
             Instruction.Add, Instruction.Multiply -> {
@@ -98,7 +105,12 @@ internal class IntcodeProgram(programString: String) {
             }
 
             Instruction.Input -> {
-                val input = inputs.removeAt(0)
+                val input = inputs.popOrNull()
+                if (input == null) {
+                    runState = RunState.InputNeeded
+                    return
+                }
+
                 val storedIndex = getParam(0)
                 values[storedIndex] = input
                 position += 2
@@ -149,12 +161,12 @@ internal class IntcodeProgram(programString: String) {
             }
         }
 
-        return StepResult.Continue
+        runState = RunState.Continue
     }
 
     internal fun run() {
         do {
-            val result = step()
-        } while (result != StepResult.Stop)
+            step()
+        } while (runState == RunState.Continue)
     }
 }
