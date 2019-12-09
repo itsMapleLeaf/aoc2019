@@ -52,6 +52,9 @@ internal val Char.asDigit get() = toString().toInt()
 internal fun <T> Iterable<T>.replace(newValue: T, targetIndex: Int) =
     mapIndexed { index, currentValue -> if (index == targetIndex) newValue else currentValue }
 
+internal fun <T> Iterable<T>.toIndexValueMap(): Map<Int, T> =
+    mapIndexed { index, value -> Pair(index, value) }.toMap()
+
 internal fun <T> List<T>.toPair() = Pair(this[0], this[1])
 
 internal fun <T> MutableList<T>.popOrNull(): T? {
@@ -81,5 +84,5 @@ internal fun getUniqueFiveLengthPermutations(start: Int, end: Int): MutableSet<L
     return result
 }
 
-internal fun Int.digits() =
+internal fun Number.digits() =
     toString().map { it.toString().toInt() }

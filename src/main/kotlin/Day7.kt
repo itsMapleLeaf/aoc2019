@@ -21,7 +21,7 @@ private fun showLargestThrusterOutput() {
                 .addInputs(setting, lastOutput)
                 .run()
 
-            lastOutput = program.outputs.last()
+            lastOutput = program.outputs.last().toInt()
         }
         return lastOutput
     }
@@ -48,7 +48,7 @@ private fun showLargestThrusterOutputWithFeedbackLoop() {
         while (true) {
             programs.replaceAll { program ->
                 val newProgram = program.addInputs(lastOutput).run()
-                lastOutput = newProgram.outputs.last()
+                lastOutput = newProgram.outputs.last().toInt()
                 newProgram
             }
 

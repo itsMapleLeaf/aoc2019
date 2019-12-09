@@ -1,7 +1,7 @@
 private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): IntcodeProgram {
-    return IntcodeProgram.fromString(programString)
-        .setValue(1, noun)
-        .setValue(2, verb)
+    return IntcodeProgram.fromString(programString).copy(debug = true)
+        .setValue(1, noun.toLong())
+        .setValue(2, verb.toLong())
         .run()
 }
 
@@ -19,7 +19,7 @@ private fun reverseOutput() {
 
     val (noun, verb) = nounVerbPermutations
         .find { (noun, verb) ->
-            runProgramWithNounAndVerb(puzzleInput, noun, verb).values.first() == 19690720
+            runProgramWithNounAndVerb(puzzleInput, noun, verb).values.keys.first() == 19690720
         }
         ?: throw Error("could not find noun and verb for given result")
 
