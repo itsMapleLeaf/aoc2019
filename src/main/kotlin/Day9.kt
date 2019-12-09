@@ -6,7 +6,7 @@ fun main() {
 }
 
 private fun showBoostKeycode() {
-    val program = IntcodeProgram.fromString(puzzleInput).debug().addInput(1).run()
+    val program = IntcodeProgram.fromString(puzzleInput).addInput(1).run()
     if (program.outputs.size > 1) {
         error("diagnostic failed, output: ${program.outputs}")
     }
