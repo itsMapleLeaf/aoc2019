@@ -81,13 +81,14 @@ internal data class IntcodeProgram(
         // to get params that are addresses we write to (e.g. for input, and the result of logical instructions)
         // these params are not affected by immediate mode
         fun writeAddressParam(offset: Int): Int {
+            val writeAddress = directParam(offset).toInt()
             val mode = paramModes.getOrNull(offset)
 
             // if relative mode, add the offset to the address we're writing to
-            if (mode == 2) return relativeModeOffset + directParam(offset).toInt()
+            if (mode == 2) return writeAddress + relativeModeOffset
 
             // normal param reading mode because the instructions are weird
-            return directParam(offset).toInt()
+            return writeAddress
         }
 
         return when (instructionCode.toInt()) {
