@@ -14,7 +14,7 @@ class IntcodeProgramTest : StringSpec() {
         "nextState - input instruction" {
             val programWithInputs = IntcodeProgram
                 .fromNumbers(3, 1, 99)
-                .addInputs(42)
+                .addInput(42)
 
             programWithInputs.inputs shouldBe listOf(42)
 
@@ -26,13 +26,13 @@ class IntcodeProgramTest : StringSpec() {
         "consumes input if state is at input needed" {
             val program = IntcodeProgram
                 .fromNumbers(3, 1, 3, 3, 99)
-                .addInputs(42)
+                .addInput(42)
 
             val programWithOneConsumedInput = program.run()
 
             programWithOneConsumedInput.runState shouldBe RunState.InputNeeded
 
-            val resumedProgram = programWithOneConsumedInput.addInputs(42).run()
+            val resumedProgram = programWithOneConsumedInput.addInput(42).run()
 
             resumedProgram.inputs shouldBe emptyList()
             resumedProgram.runState shouldBe RunState.Stopped

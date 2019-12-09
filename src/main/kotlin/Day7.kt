@@ -18,7 +18,7 @@ private fun showLargestThrusterOutput() {
         for (setting in phaseSettings) {
             val program = IntcodeProgram
                 .fromString(currentProgram)
-                .addInputs(setting, lastOutput)
+                .addInput(setting, lastOutput)
                 .run()
 
             lastOutput = program.outputs.last().toInt()
@@ -40,14 +40,14 @@ private fun showLargestThrusterOutputWithFeedbackLoop() {
 
     fun runThrusters(phaseSettings: List<Int>): Int {
         val programs = phaseSettings
-            .map { setting -> IntcodeProgram.fromString(currentProgram).addInputs(setting).run() }
+            .map { setting -> IntcodeProgram.fromString(currentProgram).addInput(setting).run() }
             .toMutableList()
 
         var lastOutput = 0
 
         while (true) {
             programs.replaceAll { program ->
-                val newProgram = program.addInputs(lastOutput).run()
+                val newProgram = program.addInput(lastOutput).run()
                 lastOutput = newProgram.outputs.last().toInt()
                 newProgram
             }

@@ -20,11 +20,11 @@ internal enum class RunState {
 internal data class IntcodeProgram(
     val values: Map<Int, Long>,
     val position: Int = 0,
-    val relativeModeOffset: Int = 0,
+    private val relativeModeOffset: Int = 0,
     val runState: RunState = RunState.Running,
     val inputs: List<Int> = emptyList(),
     val outputs: List<Long> = emptyList(),
-    val debug: Boolean = false
+    private val debugMode: Boolean = false
 ) {
     companion object {
         fun fromString(programString: String): IntcodeProgram =
@@ -36,14 +36,16 @@ internal data class IntcodeProgram(
 
     internal fun setValue(index: Int, value: Long): IntcodeProgram = copy(values = values + Pair(index, value))
 
-    internal fun addInputs(vararg inputs: Int) = copy(inputs = this.inputs + inputs.toList())
+    internal fun addInput(vararg inputs: Int) = copy(inputs = this.inputs + inputs.toList())
 
     internal fun run(): IntcodeProgram {
-        if (debug) println(this)
+        if (debugMode) println(this)
 
         val next = nextState()
         return if (next.runState == RunState.Running) next.run() else next
     }
+
+    internal fun debug() = copy(debugMode = true)
 
     private fun addOutput(newOutput: Long) = copy(outputs = outputs + newOutput)
     private fun consumeInput() = copy(inputs = inputs.drop(1))
@@ -62,29 +64,41 @@ internal data class IntcodeProgram(
 
         fun directParam(offset: Int) = values[position + offset + 1] ?: 0
 
+        // represents params which we read from and work with
         fun param(offset: Int): Long {
-            val value: Long? = when (paramModes.getOrNull(offset)) {
-                // immediate mode
-                1 -> directParam(offset)
+            val mode = paramModes.getOrNull(offset)
 
-                // relative mode
-                2 -> values[relativeModeOffset + directParam(offset).toInt()]
+            // immediate mode
+            if (mode == 1) return directParam(offset)
 
-                // positional mode (0, the default)
-                else -> values[directParam(offset).toInt()]
-            }
-            return value ?: 0
+            // relative mode
+            if (mode == 2) return values[relativeModeOffset + directParam(offset).toInt()] ?: 0
+
+            // positional mode
+            return values[directParam(offset).toInt()] ?: 0
+        }
+
+        // to get params that are addresses we write to (e.g. for input, and the result of logical instructions)
+        // these params are not affected by immediate mode
+        fun writeAddressParam(offset: Int): Int {
+            val mode = paramModes.getOrNull(offset)
+
+            // if relative mode, add the offset to the address we're writing to
+            if (mode == 2) return relativeModeOffset + directParam(offset).toInt()
+
+            // normal param reading mode because the instructions are weird
+            return directParam(offset).toInt()
         }
 
         return when (instructionCode.toInt()) {
-            1 -> Instruction.Add(param(0), param(1), directParam(2).toInt())
-            2 -> Instruction.Multiply(param(0), param(1), directParam(2).toInt())
-            3 -> Instruction.Input(directParam(0).toInt())
+            1 -> Instruction.Add(param(0), param(1), writeAddressParam(2))
+            2 -> Instruction.Multiply(param(0), param(1), writeAddressParam(2))
+            3 -> Instruction.Input(writeAddressParam(0))
             4 -> Instruction.Output(param(0))
             5 -> Instruction.JumpIfTrue(param(0), param(1).toInt())
             6 -> Instruction.JumpIfFalse(param(0), param(1).toInt())
-            7 -> Instruction.LessThan(param(0), param(1), directParam(2).toInt())
-            8 -> Instruction.Equals(param(0), param(1), directParam(2).toInt())
+            7 -> Instruction.LessThan(param(0), param(1), writeAddressParam(2))
+            8 -> Instruction.Equals(param(0), param(1), writeAddressParam(2))
             9 -> Instruction.SetRelativeModeOffset(param(0).toInt())
             99 -> Instruction.Stop
             else -> error("unknown instruction code $instructionCode")

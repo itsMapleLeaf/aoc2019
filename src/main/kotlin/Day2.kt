@@ -1,5 +1,5 @@
 private fun runProgramWithNounAndVerb(programString: String, noun: Int, verb: Int): IntcodeProgram {
-    return IntcodeProgram.fromString(programString).copy(debug = true)
+    return IntcodeProgram.fromString(programString)
         .setValue(1, noun.toLong())
         .setValue(2, verb.toLong())
         .run()
