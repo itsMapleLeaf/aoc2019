@@ -52,7 +52,7 @@ private fun showLargestThrusterOutputWithFeedbackLoop() {
                 newProgram
             }
 
-            if (programs.any { it.runState == RunState.Stopped }) break
+            if (programs.any { it.isStopped }) break
         }
 
         return lastOutput

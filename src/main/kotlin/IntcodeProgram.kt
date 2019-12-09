@@ -11,6 +11,12 @@ private sealed class Instruction(val steps: Int) {
     object Stop : Instruction(0)
 }
 
+private enum class ParamMode {
+    Position,
+    Immediate,
+    Relative,
+}
+
 internal enum class RunState {
     Running,
     InputNeeded,
@@ -18,12 +24,12 @@ internal enum class RunState {
 }
 
 internal data class IntcodeProgram(
-    val values: Map<Int, Long>,
+    val values: Map<Int, Long>, // IDEA: wrap this in some IntcodeMemory object
     val position: Int = 0,
-    private val relativeModeOffset: Int = 0,
-    val runState: RunState = RunState.Running,
     val inputs: List<Int> = emptyList(),
     val outputs: List<Long> = emptyList(),
+    private val runState: RunState = RunState.Running,
+    private val relativeModeOffset: Int = 0,
     private val debugMode: Boolean = false
 ) {
     companion object {
@@ -34,6 +40,7 @@ internal data class IntcodeProgram(
             IntcodeProgram(numbers.map { it.toLong() }.toIndexValueMap())
     }
 
+    private fun getValue(index: Int): Long = values.getOrDefault(index, 0)
     internal fun setValue(index: Int, value: Long): IntcodeProgram = copy(values = values + Pair(index, value))
 
     internal fun addInput(vararg inputs: Int) = copy(inputs = this.inputs + inputs.toList())
@@ -44,6 +51,9 @@ internal data class IntcodeProgram(
         val next = nextState()
         return if (next.runState == RunState.Running) next.run() else next
     }
+
+    internal val isStopped get() = runState == RunState.Stopped
+    internal val needsInput get() = runState == RunState.InputNeeded
 
     internal fun debug() = copy(debugMode = true)
 
@@ -58,37 +68,39 @@ internal data class IntcodeProgram(
     private fun adjustRelativeModeOffset(delta: Int) = copy(relativeModeOffset = relativeModeOffset + delta)
 
     private fun currentInstruction(): Instruction {
-        val currentValue = values[position] ?: 0
+        val currentValue = getValue(position)
         val instructionCode = currentValue % 100
-        val paramModes = currentValue.digits().dropLast(2).reversed()
 
-        fun directParam(offset: Int) = values[position + offset + 1] ?: 0
+        // IDEA: param parser data class to contain all of this logic?
+        val paramModes = currentValue.digits().dropLast(2).reversed().map {
+            when (it) {
+                0 -> ParamMode.Position
+                1 -> ParamMode.Immediate
+                2 -> ParamMode.Relative
+                else -> error("unknown param mode code $it")
+            }
+        }
+
+        fun directParam(offset: Int) = getValue(position + offset + 1)
 
         // represents params which we read from and work with
-        fun param(offset: Int): Long {
-            val mode = paramModes.getOrNull(offset)
-
-            // immediate mode
-            if (mode == 1) return directParam(offset)
-
-            // relative mode
-            if (mode == 2) return values[relativeModeOffset + directParam(offset).toInt()] ?: 0
-
-            // positional mode
-            return values[directParam(offset).toInt()] ?: 0
+        fun param(offset: Int): Long = when (paramModes.getOrNull(offset)) {
+            ParamMode.Immediate -> directParam(offset)
+            ParamMode.Relative -> getValue(relativeModeOffset + directParam(offset).toInt())
+            else /* positional or null */ -> getValue(directParam(offset).toInt())
         }
 
         // to get params that are addresses we write to (e.g. for input, and the result of logical instructions)
         // these params are not affected by immediate mode
         fun writeAddressParam(offset: Int): Int {
             val writeAddress = directParam(offset).toInt()
-            val mode = paramModes.getOrNull(offset)
+            return when (paramModes.getOrNull(offset)) {
+                // if relative mode, add the offset to the address we're writing to
+                ParamMode.Relative -> writeAddress + relativeModeOffset
 
-            // if relative mode, add the offset to the address we're writing to
-            if (mode == 2) return writeAddress + relativeModeOffset
-
-            // normal param reading mode because the instructions are weird
-            return writeAddress
+                // normal param reading mode, this is the address we write to
+                else -> writeAddress
+            }
         }
 
         return when (instructionCode.toInt()) {

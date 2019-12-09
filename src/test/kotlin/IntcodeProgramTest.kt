@@ -30,12 +30,12 @@ class IntcodeProgramTest : StringSpec() {
 
             val programWithOneConsumedInput = program.run()
 
-            programWithOneConsumedInput.runState shouldBe RunState.InputNeeded
+            programWithOneConsumedInput.needsInput shouldBe true
 
             val resumedProgram = programWithOneConsumedInput.addInput(42).run()
 
             resumedProgram.inputs shouldBe emptyList()
-            resumedProgram.runState shouldBe RunState.Stopped
+            resumedProgram.isStopped shouldBe true
         }
 
         "quine" {
