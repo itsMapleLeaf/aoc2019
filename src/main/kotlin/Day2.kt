@@ -19,9 +19,9 @@ private fun reverseOutput() {
 
     val (noun, verb) = nounVerbPermutations
         .find { (noun, verb) ->
-            runProgramWithNounAndVerb(puzzleInput, noun, verb).values.keys.first() == 19690720
+            runProgramWithNounAndVerb(puzzleInput, noun, verb).values[0] == 19690720L
         }
-        ?: throw Error("could not find noun and verb for given result")
+        ?: error("could not find noun and verb for given result")
 
     println("reversed output: ${100 * noun + verb}")
 }
