@@ -46,10 +46,11 @@ internal data class IntcodeProgram(
     internal fun addInput(vararg inputs: Int) = copy(inputs = this.inputs + inputs.toList())
 
     internal fun run(): IntcodeProgram {
-        if (debugMode) println(this)
-
-        val next = nextState()
-        return if (next.runState == RunState.Running) next.run() else next
+        var current = nextState()
+        while (current.runState == RunState.Running) {
+            current = current.nextState()
+        }
+        return current
     }
 
     internal val isStopped get() = runState == RunState.Stopped

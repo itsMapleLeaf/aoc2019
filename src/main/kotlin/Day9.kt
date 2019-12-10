@@ -3,6 +3,7 @@ private const val puzzleInput =
 
 fun main() {
     showBoostKeycode()
+    showDistressSignal()
 }
 
 private fun showBoostKeycode() {
@@ -11,4 +12,9 @@ private fun showBoostKeycode() {
         error("diagnostic failed, output: ${program.outputs}")
     }
     println("BOOST keycode: ${program.outputs.first()}")
+}
+
+private fun showDistressSignal() {
+    val result = IntcodeProgram.fromString(puzzleInput).addInput(2).run().outputs[0]
+    println("$result")
 }
