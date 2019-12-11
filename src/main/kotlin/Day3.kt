@@ -1,17 +1,8 @@
+import math.Point
 import kotlin.math.abs
 
-private data class Point(val x: Int, val y: Int) {
-    operator fun plus(point: Point) =
-        Point(x + point.x, y + point.y)
-
-    val manhattanDistance get() = abs(x - origin.x) + abs(y - origin.y)
-
-    companion object {
-        val origin = Point(1, 1)
-
-        fun fromPair(pair: Pair<Int, Int>) = Point(pair.first, pair.second)
-    }
-}
+private val origin = Point(1, 1)
+private val Point.manhattanDistance get() = abs(x - origin.x) + abs(y - origin.y)
 
 private data class Wire(private val instructionListString: String) {
     val points = let {
@@ -41,7 +32,7 @@ private data class Wire(private val instructionListString: String) {
         instructionListString
             .split(",")
             .map(::getMovementVector)
-            .fold(listOf(Point.origin), ::getNextPoints)
+            .fold(listOf(origin), ::getNextPoints)
     }
 
     fun stepCountTo(point: Point) = points.lastIndexOf(point)
@@ -52,7 +43,7 @@ private data class WireBoard(private val firstInstructionString: String, private
     val secondWire = Wire(secondInstructionString)
 
     val intersections =
-        firstWire.points.intersect(secondWire.points) - Point.origin // origin always intersects, take it out
+        firstWire.points.intersect(secondWire.points) - origin // origin always intersects, take it out
 
     val lowestManhattanDistance =
         intersections.map { it.manhattanDistance }.min()
