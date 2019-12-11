@@ -26,7 +26,7 @@ private data class Wire(private val instructionListString: String) {
                 lastPoint.y approaching destination.y
             )
 
-            return points.dropLast(1) + tracedPath.map { Point.fromPair(it) }
+            return points.dropLast(1) + tracedPath.map { Point(it) }
         }
 
         instructionListString
