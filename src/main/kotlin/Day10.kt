@@ -1,6 +1,6 @@
 import math.Point
-import math.Segment
 import java.io.File
+import kotlin.math.atan2
 
 fun main() {
     println(detectionCountOfBestMonitoringLocation(puzzleInput))
@@ -18,22 +18,19 @@ fun detectionCountOfBestMonitoringLocation(rows: List<String>): Int? {
     }
 
     fun getDetectionCount(center: Point): Int {
-        var count = 0
+        val angles = mutableSetOf<Double>()
 
         for (other in asteroids) {
             if (other == center) continue
 
-            val lineOfSight = Segment(center, other)
-            val hasAsteroidBetween = asteroids.any { it != center && it != other && lineOfSight.touches(it) }
-
-            if (!hasAsteroidBetween) count += 1
+            val (relativeX, relativeY) = center - other
+            angles += atan2(relativeX.toDouble(), relativeY.toDouble())
         }
 
-        return count
+        return angles.size
     }
 
-    val detectionCounts = asteroids.map(::getDetectionCount)
-    return detectionCounts.max()
+    return asteroids.map(::getDetectionCount).max()
 }
 
 private val puzzleInput = File("Day10Input.txt").readLines()
