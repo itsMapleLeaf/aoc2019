@@ -14,11 +14,11 @@ private fun movementVector(angle: Double): Point {
     return Point(x.toInt(), -y.toInt())
 }
 
-private fun paintedSquareCount(): Int {
+private fun getPaintedSquares(startingColor: Int): Map<Point, Int> {
     var robotPosition = Point(0, 0)
     var direction = 0.0
     var program = IntcodeProgram.fromString(robotProgram)
-    val paintedSquares = mutableMapOf<Point, Int>()
+    val paintedSquares = mutableMapOf(Point(0, 0) to startingColor)
 
     while (!program.isStopped) {
         program = program.addInput(paintedSquares[robotPosition] ?: 0).run()
@@ -38,9 +38,27 @@ private fun paintedSquareCount(): Int {
         robotPosition += movementVector(direction)
     }
 
-    return paintedSquares.count()
+    return paintedSquares
+}
+
+private fun getImage(squares: Map<Point, Int>): String {
+    val xValues = squares.keys.map { it.x }
+    val yValues = squares.keys.map { it.y }
+
+    val startX = xValues.min() ?: error("no x values?")
+    val endX = xValues.max() ?: error("no x values?")
+
+    val startY = yValues.min() ?: error("no y values?")
+    val endY = yValues.max() ?: error("no uy values?")
+
+    return (startY..endY).joinToString("\n") { y ->
+        (startX..endX)
+            .map { x -> squares[Point(x, y)] ?: 0 }
+            .joinToString(" ") { if (it == 1) "X" else " " }
+    }
 }
 
 fun main() {
-    println(paintedSquareCount())
+    println(getPaintedSquares(startingColor = 0).count())
+    println(getImage(getPaintedSquares(startingColor = 1)))
 }
