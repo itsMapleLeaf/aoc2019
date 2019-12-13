@@ -120,51 +120,51 @@ internal data class IntcodeProgram(
     }
 
     private fun nextState(): IntcodeProgram {
-        return when (val instruction = currentInstruction()) {
+        return when (val inst = currentInstruction()) {
             is Instruction.Stop ->
                 setRunState(RunState.Stopped)
 
-            is Instruction.Add -> with(instruction) {
-                setValue(resultIndex, left + right).advance(steps)
-            }
+            is Instruction.Add ->
+                setValue(inst.resultIndex, inst.left + inst.right).advance(inst.steps)
 
-            is Instruction.Multiply -> with(instruction) {
-                setValue(resultIndex, left * right).advance(steps)
-            }
+            is Instruction.Multiply ->
+                setValue(inst.resultIndex, inst.left * inst.right).advance(inst.steps)
 
             is Instruction.Input -> {
                 val input = inputs.firstOrNull() ?: return setRunState(RunState.InputNeeded)
-                with(instruction) {
-                    setValue(inputIndex, input.toLong())
-                        .consumeInput()
-                        .advance(steps)
-                        .setRunState(RunState.Running)
-                }
+                setValue(inst.inputIndex, input.toLong())
+                    .consumeInput()
+                    .advance(inst.steps)
+                    .setRunState(RunState.Running)
             }
 
-            is Instruction.Output -> with(instruction) {
-                addOutput(output).advance(steps)
+            is Instruction.Output ->
+                addOutput(inst.output).advance(inst.steps)
+
+            is Instruction.JumpIfTrue ->
+                if (inst.value != 0L)
+                    setPosition(inst.destination)
+                else
+                    advance(inst.steps)
+
+            is Instruction.JumpIfFalse ->
+                if (inst.value == 0L)
+                    setPosition(inst.destination)
+                else
+                    advance(inst.steps)
+
+            is Instruction.LessThan -> {
+                val result = if (inst.left < inst.right) 1L else 0L
+                setValue(inst.resultIndex, result).advance(inst.steps)
             }
 
-            is Instruction.JumpIfTrue -> with(instruction) {
-                if (value != 0L) setPosition(destination) else advance(steps)
+            is Instruction.Equals -> {
+                val result = if (inst.left == inst.right) 1L else 0L
+                setValue(inst.resultIndex, result).advance(inst.steps)
             }
 
-            is Instruction.JumpIfFalse -> with(instruction) {
-                if (value == 0L) setPosition(destination) else advance(steps)
-            }
-
-            is Instruction.LessThan -> with(instruction) {
-                setValue(resultIndex, if (left < right) 1 else 0).advance(steps)
-            }
-
-            is Instruction.Equals -> with(instruction) {
-                setValue(resultIndex, if (left == right) 1 else 0).advance(steps)
-            }
-
-            is Instruction.SetRelativeModeOffset -> with(instruction) {
-                adjustRelativeModeOffset(offset).advance(steps)
-            }
+            is Instruction.SetRelativeModeOffset ->
+                adjustRelativeModeOffset(inst.offset).advance(inst.steps)
         }
     }
 }
