@@ -9,6 +9,13 @@ private val testInput = listOf(
     "<x=3, y=5, z=-1>"
 )
 
+private val testInput2 = listOf(
+    "<x=-8, y=-10, z=0>",
+    "<x=5, y=5, z=10>",
+    "<x=2, y=-7, z=3>",
+    "<x=9, y=-8, z=-3>"
+)
+
 private val puzzleInput = listOf(
     "<x=13, y=-13, z=-2>",
     "<x=16, y=2, z=-15>",
@@ -24,10 +31,8 @@ private fun Vector.signs() =
 
 private data class Planet(var position: Vector, var velocity: Vector = Vector(0, 0, 0))
 
-fun totalEnergyInSystem(): Int {
-    val vectorStrings = puzzleInput
-
-    val planets = vectorStrings
+private class Simulation(planetPositionStrings: List<String>) {
+    val planets = planetPositionStrings
         .map { vectorString ->
             val intPattern = "-?\\d+"
             val vectorRegex = Regex("<x=($intPattern), y=($intPattern), z=($intPattern)>")
@@ -38,7 +43,12 @@ fun totalEnergyInSystem(): Int {
         }
         .toMutableList()
 
-    for (n in 0 until 1000) {
+    @ExperimentalUnsignedTypes
+    fun stateHash(): Long {
+        return this.planets.hashCode().toUInt().toLong()
+    }
+
+    fun step() {
         for ((firstIndex, first) in planets.withIndex()) {
             for (second in planets.slice((firstIndex + 1)..planets.lastIndex)) {
                 val difference = (second.position - first.position).signs()
@@ -51,10 +61,46 @@ fun totalEnergyInSystem(): Int {
             planet.position += planet.velocity
         }
     }
+}
 
-    return planets.map { it.position.absoluteSum() * it.velocity.absoluteSum() }.sum()
+private fun totalEnergyInSystem(): Int {
+    val simulation = Simulation(puzzleInput)
+
+    for (i in 0 until 1000) {
+        simulation.step()
+    }
+
+    return simulation.planets.map { it.position.absoluteSum() * it.velocity.absoluteSum() }.sum()
+}
+
+@ExperimentalUnsignedTypes
+private fun originOfTheUniverse(): Long {
+    val simulation = Simulation(testInput2)
+    var simulationHashBits = 0L
+    var i = 0L
+
+    while (true) {
+        simulation.step()
+        i += 1
+
+        val hash = simulation.stateHash()
+
+        val current = simulationHashBits
+        val next = simulationHashBits or hash
+        println("$current or $hash = $next")
+        if (current == next) {
+            return i
+        }
+
+        simulationHashBits = next
+
+        if (i % 1_000_000 == 0L) {
+            println(i)
+        }
+    }
 }
 
 fun main() {
-    println(totalEnergyInSystem())
+//    println(totalEnergyInSystem())
+    println(originOfTheUniverse())
 }
