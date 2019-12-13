@@ -44,8 +44,19 @@ private class Simulation(planetPositionStrings: List<String>) {
         .toMutableList()
 
     @ExperimentalUnsignedTypes
-    fun stateHash(): Long {
-        return this.planets.hashCode().toUInt().toLong()
+    fun stateHash(): Int {
+        val array = IntArray(planets.size * 6)
+
+        planets.forEachIndexed { index, planet ->
+            array[index] = planet.position.x
+            array[index + 1] = planet.position.y
+            array[index + 2] = planet.position.z
+            array[index + 3] = planet.velocity.x
+            array[index + 4] = planet.velocity.y
+            array[index + 5] = planet.velocity.z
+        }
+
+        return array.contentHashCode()
     }
 
     fun step() {
@@ -86,7 +97,7 @@ private fun originOfTheUniverse(): Long {
         val hash = simulation.stateHash()
 
         val current = simulationHashBits
-        val next = simulationHashBits or hash
+        val next = simulationHashBits or hash.toLong()
         println("$current or $hash = $next")
         if (current == next) {
             return i
