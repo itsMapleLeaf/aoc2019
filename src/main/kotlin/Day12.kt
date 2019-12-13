@@ -22,26 +22,21 @@ private fun Vector.absoluteSum() =
 private fun Vector.signs() =
     Vector(x.sign, y.sign, z.sign)
 
-private data class Planet(var position: Vector, var velocity: Vector = Vector(0, 0, 0)) {
-    companion object {
-        private const val intPattern = "-?\\d+"
-        private val vectorRegex = Regex("<x=($intPattern), y=($intPattern), z=($intPattern)>")
-
-        fun fromVectorString(vectorString: String): Planet {
-            val match = vectorRegex.find(vectorString) ?: error("invalid planet string (or regex broke)")
-            val (x, y, z) = match.groupValues.drop(1).map { it.toInt() }
-            return Planet(x, y, z)
-        }
-    }
-
-    constructor(x: Int, y: Int, z: Int) : this(Vector(x, y, z))
-
-    fun energy() = position.absoluteSum() * velocity.absoluteSum()
-}
+private data class Planet(var position: Vector, var velocity: Vector = Vector(0, 0, 0))
 
 fun totalEnergyInSystem(): Int {
     val vectorStrings = puzzleInput
-    val planets = vectorStrings.map { Planet.fromVectorString(it) }.toMutableList()
+
+    val planets = vectorStrings
+        .map { vectorString ->
+            val intPattern = "-?\\d+"
+            val vectorRegex = Regex("<x=($intPattern), y=($intPattern), z=($intPattern)>")
+
+            val match = vectorRegex.find(vectorString) ?: error("invalid planet string (or regex broke)")
+            val (x, y, z) = match.groupValues.drop(1).map { it.toInt() }
+            Planet(Vector(x, y, z))
+        }
+        .toMutableList()
 
     for (n in 0 until 1000) {
         for ((firstIndex, first) in planets.withIndex()) {
@@ -57,7 +52,7 @@ fun totalEnergyInSystem(): Int {
         }
     }
 
-    return planets.map { it.energy() }.sum()
+    return planets.map { it.position.absoluteSum() * it.velocity.absoluteSum() }.sum()
 }
 
 fun main() {
