@@ -39,30 +39,27 @@ private data class Planet(var position: Vector, var velocity: Vector = Vector(0,
     fun energy() = position.absoluteSum() * velocity.absoluteSum()
 }
 
-fun main() {
+fun totalEnergyInSystem(): Int {
     val vectorStrings = puzzleInput
     val planets = vectorStrings.map { Planet.fromVectorString(it) }.toMutableList()
-    val stepCount = 1000
 
-    (0 until stepCount).forEach { _ ->
-        planets.indices.forEach { firstIndex ->
-            ((firstIndex + 1)..planets.lastIndex).forEach { secondIndex ->
-                val first = planets[firstIndex]
-                val second = planets[secondIndex]
-
+    for (n in 0 until 1000) {
+        for ((firstIndex, first) in planets.withIndex()) {
+            for (second in planets.slice((firstIndex + 1)..planets.lastIndex)) {
                 val difference = (second.position - first.position).signs()
-
                 first.velocity += difference
                 second.velocity -= difference
-
-//            println("$first, $second, $difference")
             }
         }
 
-        planets.forEach { planet -> planet.position += planet.velocity }
+        for (planet in planets) {
+            planet.position += planet.velocity
+        }
     }
 
-    val totalEnergy = planets.map { it.energy() }.sum()
+    return planets.map { it.energy() }.sum()
+}
 
-    println(totalEnergy)
+fun main() {
+    println(totalEnergyInSystem())
 }
