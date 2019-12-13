@@ -135,7 +135,10 @@ internal data class IntcodeProgram(
             is Instruction.Input -> {
                 val input = inputs.firstOrNull() ?: return setRunState(RunState.InputNeeded)
                 with(instruction) {
-                    setValue(inputIndex, input.toLong()).consumeInput().advance(steps).setRunState(RunState.Running)
+                    setValue(inputIndex, input.toLong())
+                        .consumeInput()
+                        .advance(steps)
+                        .setRunState(RunState.Running)
                 }
             }
 
