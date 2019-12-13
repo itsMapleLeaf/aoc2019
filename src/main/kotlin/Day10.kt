@@ -1,5 +1,5 @@
 
-import math.Point
+import math.Vector
 import math.isInRange
 import java.io.File
 import kotlin.math.PI
@@ -11,11 +11,11 @@ fun main() {
     println(location.visibleDetectionCount())
 
     val vaporized = location.vaporizeAsteroids()
-    val (x, y) = vaporized.drop(199).first().point
+    val (x, y) = vaporized.drop(199).first().vector
     println(x * 100 + y)
 }
 
-data class MonitoringLocation(val point: Point, val detections: List<AsteroidDetection>) {
+data class MonitoringLocation(val vector: Vector, val detections: List<AsteroidDetection>) {
     fun visibleDetectionCount() =
         detections.map { it.baseAngle }.toSet().size
 
@@ -42,7 +42,7 @@ data class MonitoringLocation(val point: Point, val detections: List<AsteroidDet
     }
 }
 
-data class AsteroidDetection(val point: Point, val baseAngle: Double, val distance: Double) {
+data class AsteroidDetection(val vector: Vector, val baseAngle: Double, val distance: Double) {
     // returns the angle in range of [0, PI * 2) going clockwise
     val clockwiseAngle: Double
         get() {
@@ -58,12 +58,12 @@ fun findBestMonitoringLocation(rows: List<String>): MonitoringLocation {
     val asteroids = sequence {
         for ((y, rowString) in rows.withIndex()) {
             for ((x, char) in rowString.withIndex()) {
-                if (char == '#') yield(Point(x, y))
+                if (char == '#') yield(Vector(x, y))
             }
         }
     }
 
-    fun getDetections(center: Point) = sequence {
+    fun getDetections(center: Vector) = sequence {
         for (other in asteroids) {
             if (other == center) continue
 

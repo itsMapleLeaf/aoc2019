@@ -1,24 +1,24 @@
-import math.Point
+import math.Vector
 import kotlin.math.abs
 
-private val origin = Point(1, 1)
-private val Point.manhattanDistance get() = abs(x - origin.x) + abs(y - origin.y)
+private val origin = Vector(1, 1)
+private val Vector.manhattanDistance get() = abs(x - origin.x) + abs(y - origin.y)
 
 private data class Wire(private val instructionListString: String) {
     val points = let {
-        fun getMovementVector(instructionString: String): Point {
+        fun getMovementVector(instructionString: String): Vector {
             val distance = instructionString.drop(1).toInt()
             return when (val letter = instructionString[0]) {
-                'U' -> Point(0, distance)
-                'D' -> Point(0, -distance)
-                'L' -> Point(-distance, 0)
-                'R' -> Point(distance, 0)
+                'U' -> Vector(0, distance)
+                'D' -> Vector(0, -distance)
+                'L' -> Vector(-distance, 0)
+                'R' -> Vector(distance, 0)
                 else -> throw Error("unexpected direction $letter")
             }
         }
 
-        fun getNextPoints(points: List<Point>, movement: Point): List<Point> {
-            val lastPoint = points.last()
+        fun getNextPoints(vectors: List<Vector>, movement: Vector): List<Vector> {
+            val lastPoint = vectors.last()
             val destination = lastPoint + movement
 
             val tracedPath = getPossiblePermutationPairs(
@@ -26,7 +26,7 @@ private data class Wire(private val instructionListString: String) {
                 lastPoint.y approaching destination.y
             )
 
-            return points.dropLast(1) + tracedPath.map { Point(it) }
+            return vectors.dropLast(1) + tracedPath.map { Vector(it) }
         }
 
         instructionListString
@@ -35,7 +35,7 @@ private data class Wire(private val instructionListString: String) {
             .fold(listOf(origin), ::getNextPoints)
     }
 
-    fun stepCountTo(point: Point) = points.lastIndexOf(point)
+    fun stepCountTo(vector: Vector) = points.lastIndexOf(vector)
 }
 
 private data class WireBoard(private val firstInstructionString: String, private val secondInstructionString: String) {

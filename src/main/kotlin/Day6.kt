@@ -1,7 +1,7 @@
 import java.io.File
 
-private class Planet(private val name: String) {
-    internal var parent: Planet? = null
+private class TreePlanet(private val name: String) {
+    internal var parent: TreePlanet? = null
 
     override fun toString() = "Planet($name)"
 
@@ -10,7 +10,7 @@ private class Planet(private val name: String) {
         return 1 + parent.getOrbitCount()
     }
 
-    internal fun getPathToCenter(): List<Planet> {
+    internal fun getPathToCenter(): List<TreePlanet> {
         val parent = this.parent ?: return emptyList()
         return listOf(this) + parent.getPathToCenter()
     }
@@ -22,13 +22,13 @@ private fun getInput() =
 private fun getTestInput() =
     "COM)B B)C C)D D)E E)F B)G G)H D)I E)J J)K K)L K)YOU I)SAN".split(" ")
 
-private fun constructPlanetMap(): Map<String, Planet> {
+private fun constructPlanetMap(): Map<String, TreePlanet> {
     val namePairs = getInput().map { it.split(")").toPair() }
-    val planetMap = mutableMapOf<String, Planet>()
+    val planetMap = mutableMapOf<String, TreePlanet>()
 
     for ((parentName, childName) in namePairs) {
-        val parent = planetMap.getOrPut(parentName) { Planet(parentName) }
-        val child = planetMap.getOrPut(childName) { Planet(childName) }
+        val parent = planetMap.getOrPut(parentName) { TreePlanet(parentName) }
+        val child = planetMap.getOrPut(childName) { TreePlanet(childName) }
         child.parent = parent
     }
 

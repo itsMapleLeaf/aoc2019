@@ -1,13 +1,13 @@
 package math
 
-data class Segment(val start: Point, val end: Point) {
-    fun touches(point: Point): Boolean {
-        val deltaX = delta(point.x, start.x, end.x)
-        val deltaY = delta(point.y, start.y, end.y)
+data class Segment(val start: Vector, val end: Vector) {
+    fun touches(vector: Vector): Boolean {
+        val deltaX = delta(vector.x, start.x, end.x)
+        val deltaY = delta(vector.y, start.y, end.y)
 
         return when {
-            start.x == end.x -> point.x == start.x && deltaY.isInRange(0, 1)
-            start.y == end.y -> point.y == start.y && deltaX.isInRange(0, 1)
+            start.x == end.x -> vector.x == start.x && deltaY.isInRange(0, 1)
+            start.y == end.y -> vector.y == start.y && deltaX.isInRange(0, 1)
             else -> deltaX.isInRange(0, 1) && deltaY.isInRange(0, 1) && deltaX == deltaY
         }
     }
