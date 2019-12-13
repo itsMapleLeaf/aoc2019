@@ -49,7 +49,7 @@ private fun getImage(squares: Map<Point, Int>): String {
     val endX = xValues.max() ?: error("no x values?")
 
     val startY = yValues.min() ?: error("no y values?")
-    val endY = yValues.max() ?: error("no uy values?")
+    val endY = yValues.max() ?: error("no y values?")
 
     return (startY..endY).joinToString("\n") { y ->
         (startX..endX)
