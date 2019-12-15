@@ -45,6 +45,7 @@ private fun primes(): Sequence<Long> = sequence {
     }
 }
 
+// written using the Cake/Ladder method https://www.calculatorsoup.com/calculators/math/lcm.php
 private fun leastCommonMultiple(vararg numbers: Number): Long {
     val cake = mutableListOf(numbers.map { it.toLong() })
     val ladder = mutableListOf<Long>()
@@ -157,7 +158,7 @@ private fun originOfTheUniverse(): Long {
 }
 
 fun main() {
-//    println(totalEnergyInSystem())
+    println(totalEnergyInSystem())
     println(originOfTheUniverse())
 }
 
